@@ -1,0 +1,64 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r src/backend/requirements.txt
+
+    - name: Run tests
+      run: |
+        pip install pytest pytest-asyncio
+        pytest tests/
+
+    - name: Build Docker images
+      run: |
+        docker build -t todo-chat-api:latest src/backend/.
+        docker build -t recurring-task-service:latest src/backend/recurring-task-service/.
+        docker build -t notification-service:latest src/backend/notification-service/.
+        docker build -t websocket-service:latest src/backend/websocket-service/.
+
+    - name: Login to Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ secrets.CONTAINER_REGISTRY }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    - name: Push Docker images
+      run: |
+        docker push todo-chat-api:latest
+        docker push recurring-task-service:latest
+        docker push notification-service:latest
+        docker push websocket-service:latest
+
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: '3.10.0'
+
+    - name: Deploy to Kubernetes
+      run: |
+        helm upgrade --install todo-chat-api helm/todo-chat-api/ --namespace todo-app --create-namespace
+        helm upgrade --install recurring-task-service helm/recurring-task-service/ --namespace todo-app
+        helm upgrade --install notification-service helm/notification-service/ --namespace todo-app
+        helm upgrade --install websocket-service helm/websocket-service/ --namespace todo-app
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}

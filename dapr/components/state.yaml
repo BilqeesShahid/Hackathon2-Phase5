@@ -1,0 +1,12 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: task-statestore
+spec:
+  type: state.postgresql
+  version: v1
+  metadata:
+  - name: connectionString
+    value: "{{.PG_CONNECTION_STRING}}"  # Will be provided via secrets or environment
+  - name: actorStateStore
+    value: "false"

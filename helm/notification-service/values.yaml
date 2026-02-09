@@ -1,0 +1,44 @@
+# Default values for notification-service.
+
+replicaCount: 1
+
+image:
+  repository: notification-service
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Application-specific configurations
+env:
+  DATABASE_URL: "postgresql://user:password@postgres:5432/todo_db"
+  DAPR_SIDECAR_IP: "localhost"
