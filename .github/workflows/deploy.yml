@@ -16,7 +16,7 @@ jobs:
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
-        echo "$HF_TOKEN" | docker login -u hf --password-stdin https://huggingface.co
+        echo "$HF_TOKEN" | docker login -u hf --password-stdin
 
     - name: Build Docker image
       run: |
@@ -27,11 +27,11 @@ jobs:
         HF_USERNAME: ${{ secrets.HF_USERNAME }}
         HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
       run: |
-        docker tag advanced-todo-backend:latest huggingface.co/$HF_USERNAME/$HF_SPACE_NAME:latest
+        docker tag advanced-todo-backend:latest $HF_USERNAME/$HF_SPACE_NAME:latest
 
     - name: Push image to Hugging Face Space
       env:
         HF_USERNAME: ${{ secrets.HF_USERNAME }}
         HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
       run: |
-        docker push huggingface.co/$HF_USERNAME/$HF_SPACE_NAME:latest
+        docker push $HF_USERNAME/$HF_SPACE_NAME:latest
